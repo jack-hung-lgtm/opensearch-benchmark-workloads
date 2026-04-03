@@ -116,6 +116,30 @@
     ]
 },
 {
+    "name": "random-vector-index-only-timed",
+    "description": "Ingest random vectors with fixed client count for provided time period",
+    "default": false,
+    "schedule": [
+       {{ benchmark.collect(parts="common/random-index-only-timed-schedule.json") }}
+    ]
+},
+{
+  "name": "aoss-index-only",
+  "description": "Index only for AOSS",
+  "default": false,
+  "schedule": [
+    {{ benchmark.collect(parts="aoss/index-only-schedule.json") }}
+  ]
+},
+{
+  "name": "aoss-search-only",
+  "description": "Search only for AOSS",
+  "default": false,
+  "schedule": [
+    {{ benchmark.collect(parts="aoss/search-only-schedule.json") }}
+  ]
+},
+{
     "name": "no-train-test-multisegment-queries",
     "description": "Index vector search which does not use an algorithm that requires training. Includes two rounds of queries: one with multiple segments and one with force merged segments.",
     "default": false,
@@ -175,5 +199,67 @@
        {{ benchmark.collect(parts="common/random-index-only-schedule.json") }},
        {{ benchmark.collect(parts="common/update-prefetch-schedule.json") }},
        {{ benchmark.collect(parts="common/random-search-only-schedule.json") }}
+    ]
+},
+{
+    "name": "knn-no-train-test-small",
+    "default": false,
+    "schedule": [
+        {
+            "operation": {
+                "name": "delete-target-index",
+                "operation-type": "delete-index",
+                "only-if-exists": true,
+                "index": "{{ target_index_name }}"
+            }
+        },
+        {
+            "operation": {
+                "name": "wait-a-minute-or-more-1",
+                "operation-type": "sleep",
+                "duration": {{ wait_time_in_sec | default(300) }}
+            }
+        },
+        {
+            "operation": {
+                "name": "create-target-index",
+                "operation-type": "create-index",
+                "index": "{{ target_index_name }}"
+            }
+        },
+        {
+            "operation": {
+                "name": "wait-a-minute-or-more-2",
+                "operation-type": "sleep",
+                "duration": {{ wait_time_in_sec | default(300) }}
+            }
+        },
+        {
+            "operation": {
+                "name": "custom-vector-bulk-offset",
+                "operation-type": "offset-bulk-vector-data-set",
+                "index": "{{ target_index_name }}",
+                "field": "{{ target_field_name }}",
+                "bulk_size": {{ target_index_bulk_size | default(500) }},
+                "data_set_format": "{{ target_index_bulk_index_data_set_format | default("hdf5") }}",
+                "data_set_path": "{{ target_index_bulk_index_data_set_path | default("") }}",
+                "data_set_corpus": "{{ target_index_bulk_index_data_set_corpus | default("") }}",
+                "num_vectors": {{ target_index_num_vectors | default(1000000) }},
+                "starting_offset": {{ starting_offset | default(0) }},
+                "retries": 10,
+                "id-field-name": "{{ id_field_name }}",
+                "filter_attributes": {{ target_dataset_filter_attributes | default([]) | tojson }},
+                "ramp_up_time_period": {{ ramp_up_time_period | default(100) }},
+                "timeout": "{{ timeout | default(1200) }}"
+            },
+            "clients": {{ target_index_bulk_index_clients | default(5) }}
+        },
+        {
+            "operation": {
+                "name": "wait-a-minute-or-more-3",
+                "operation-type": "sleep",
+                "duration": {{ wait_time_in_sec | default(300) }}
+            }
+        }
     ]
 }

@@ -9,12 +9,13 @@
     "mode": "on_disk",
 
     "target_index_bulk_size": 100,
-    "indexing_clients": 5,
-    "index_iterations": 1000,
+    "indexing_clients": 10,
+    "index_time_period": 7200,
 
     "target_index_max_num_segments": 1,
     "hnsw_ef_search": 100,
     "hnsw_ef_construction": 100,
+    "index_target_throughput": 2350,
 
     "query_k": 100,
     "query_body": {
